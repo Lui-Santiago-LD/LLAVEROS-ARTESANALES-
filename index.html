@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Llavero de Cuero - Tienda Exclusiva</title>
+  
+  <!-- Tipografía Futura / Oswald -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Oswald:wght@700&display=swap" rel="stylesheet">
+  
+  <!-- Leaflet CSS para OpenStreetMap -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <style>
+    :root {
+      --color-primary: #615C4B;
+      --color-bg: #FAF8F2;
+      --color-accent: #AEA897;
+      --color-dark: #414761;
+      --color-soft: #979BAE;
+      --font-heading: 'Oswald', 'Futura', sans-serif;
+      --font-body: 'Montserrat', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--color-bg);
+      color: var(--color-dark);
+      font-family: var(--font-body);
+      line-height: 1.5;
+    }
+
+    header {
+      background-color: var(--color-primary);
+      color: var(--color-bg);
+      padding: 1.2rem 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    header h1 {
+      font-family: var(--font-heading);
+      font-size: 2.2rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+    }
+
+    nav button {
+      background: transparent;
+      border: 1px solid var(--color-bg);
+      color: var(--color-bg);
+      padding: 0.5rem 1.4rem;
+      cursor: pointer;
+      font-family: var(--font-body);
+      font-weight: 600;
+      border-radius: 20px;
+      transition: all 0.3s ease;
+    }
+
+    nav button:hover, nav button.active {
+      background: var(--color-bg);
+      color: var(--color-primary);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Hero Section */
+    .hero-product-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      background: #fff;
+      padding: 2.5rem;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    @media (max-width: 850px) {
+      .hero-product-section, .secondary-grid {
+        grid-template-columns: 1fr !important;
+      }
+    }
+
+    .product-image-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: var(--color-bg);
+      padding: 1.5rem;
+      border-radius: 12px;
+      border: 1px solid var(--color-accent);
+    }
+
+    .product-image-container img {
+      width: 100%;
+      max-height: 380px;
+      object-fit: contain;
+      transition: opacity 0.3s ease;
+    }
+
+    .hero-details h2 {
+      font-family: var(--font-heading);
+      font-size: 2.5rem;
+      color: var(--color-dark);
+      text-transform: uppercase;
+    }
+
+    .price-tag {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--color-primary);
+      margin: 0.5rem 0 1.5rem 0;
+    }
+
+    .option-group {
+      margin-bottom: 1.2rem;
+    }
+
+    .option-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+      color: var(--color-dark);
+    }
+
+    /* Swatches de Color */
+    .color-swatches {
+      display: flex;
+      gap: 15px;
+      margin-top: 0.5rem;
+    }
+
+    .swatch {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 3px solid #fff;
+      box-shadow: 0 0 0 2px var(--color-accent);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .swatch:hover {
+      transform: scale(1.1);
+    }
+
+    .swatch.selected {
+      box-shadow: 0 0 0 3px var(--color-dark);
+      transform: scale(1.08);
+    }
+
+    select, input[type="number"], input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 0.7rem;
+      border: 1px solid var(--color-soft);
+      border-radius: 8px;
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+    }
+
+    /* Grid Secundario */
+    .secondary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .card-box {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+    }
+
+    .card-box h3 {
+      font-family: var(--font-heading);
+      font-size: 1.4rem;
+      text-transform: uppercase;
+      color: var(--color-primary);
+      margin-bottom: 1rem;
+      border-bottom: 2px solid var(--color-bg);
+      padding-bottom: 0.5rem;
+    }
+
+    /* Tabla de Mayoreo */
+    .wholesale-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .wholesale-table th, .wholesale-table td {
+      border: 1px solid var(--color-accent);
+      padding: 0.75rem;
+      text-align: center;
+    }
+
+    .wholesale-table th {
+      background-color: var(--color-primary);
+      color: var(--color-bg);
+      font-weight: 600;
+    }
+
+    /* Mapa */
+    #map {
+      height: 200px;
+      width: 100%;
+      border-radius: 8px;
+      margin-top: 0.5rem;
+      border: 1px solid var(--color-accent);
+    }
+
+    /* Personalización / Complementos */
+    .custom-text-card {
+      background: var(--color-bg);
+      border: 1px solid var(--color-accent);
+      padding: 1rem;
+      border-radius: 8px;
+    }
+
+    .custom-text-card .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .custom-text-card input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+
+    /* Footer / Checkout Bar */
+    .checkout-summary-bar {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    @media (max-width: 768px) {
+      .checkout-summary-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+
+    .summary-details {
+      display: flex;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .summary-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .summary-item span {
+      font-size: 0.85rem;
+      color: var(--color-soft);
+      font-weight: 600;
+    }
+
+    .summary-item strong {
+      font-size: 1.2rem;
+      color: var(--color-dark);
+    }
+
+    /* Botones */
+    .btn-main {
+      background: var(--color-dark);
+      color: #fff;
+      border: none;
+      padding: 1rem 2.5rem;
+      font-size: 1.2rem;
+      font-family: var(--font-heading);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+    }
+
+    .btn-main:hover {
+      background: var(--color-primary);
+      transform: translateY(-2px);
+    }
+
+    /* Anuncio Pop-Up Flotante (Minijuego) */
+    .promo-banner-overlay {
+      position: fixed;
+      bottom: 25px;
+      right: 25px;
+      z-index: 9999;
+      background: #fff;
+      border: 2px solid var(--color-primary);
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      width: 320px;
+      padding: 1.2rem;
+      animation: slideUp 0.4s ease-out;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(100px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .banner-close {
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      background: transparent;
+      border: none;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: var(--color-dark);
+      cursor: pointer;
+    }
+
+    .game-area {
+      height: 90px;
+      position: relative;
+      background: var(--color-bg);
+      border-radius: 6px;
+      margin-top: 0.8rem;
+      overflow: hidden;
+      border: 1px dashed var(--color-accent);
+    }
+
+    #target-btn {
+      position: absolute;
+      background: var(--color-dark);
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      top: 30px;
+      left: 100px;
+    }
+
+    /* Modales */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+    }
+
+    .modal-content {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 12px;
+      max-width: 480px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    /* Ticket */
+    .ticket {
+      font-family: 'Courier New', Courier, monospace;
+      background: #FAF8F2;
+      padding: 1.5rem;
+      border: 1px dashed #414761;
+      border-radius: 4px;
+    }
+
+    .ticket h3 { text-align: center; margin-bottom: 0.8rem; font-family: var(--font-heading); }
+    .ticket-line { display: flex; justify-content: space-between; margin: 0.3rem 0; font-size: 0.9rem; }
+    .ticket-total { border-top: 2px dashed #000; margin-top: 0.5rem; padding-top: 0.5rem; font-weight: bold; font-size: 1rem; }
+
+    /* Sugerencias */
+    .suggested-section {
+      background: #fff;
+      padding: 1.5rem 2rem;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .suggested-section img {
+      width: 70px;
+      height: 70px;
+      min-width: 70px;
+      min-height: 70px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+
+    /* Tablas Admin */
+    .sales-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      margin-top: 1rem;
+    }
+
+    .sales-table th, .sales-table td {
+      padding: 0.8rem;
+      border: 1px solid #ddd;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+
+    .sales-table th {
+      background: var(--color-dark);
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Llaveros Artesanales</h1>
+    <nav>
+      <button class="nav-btn active" onclick="switchTab('store')">Tienda</button>
+      <button class="nav-btn" onclick="switchTab('admin')">Panel Ventas</button>
+    </nav>
+  </header>
+
+  <div class="container">
+    
+    <!-- PESTAÑA TIENDA -->
+    <div id="tab-store" class="tab-content active">
+      
+      <!-- SECCIÓN 1: VISTA DEL PRODUCTO Y SELECCIÓN DE COLOR/CANTIDAD/PERSONALIZACIÓN -->
+      <section class="hero-product-section">
+        <div class="product-image-container">
+          <img id="product-img" src="https://i.etsystatic.com/26953790/r/il/4177ff/5594756201/il_fullxfull.5594756201_sx23.jpg" alt="Llavero Café">
+        </div>
+
+        <div class="hero-details">
+          <h2>Llavero de Cuero Premium</h2>
+          <div class="price-tag">
+            $<span id="final-unit-price">0.00</span> MXN <small style="font-size:0.9rem; font-weight:normal; color:var(--color-soft);">/ pza (+IVA)</small>
+          </div>
+
+          <!-- Seleccionar Color -->
+          <div class="option-group">
+            <label>1. Elige tu Color:</label>
+            <div class="color-swatches">
+              <div class="swatch selected" style="background-color: #5A3825;" onclick="selectColor('cafe', 99.99, 'https://i.etsystatic.com/26953790/r/il/4177ff/5594756201/il_fullxfull.5594756201_sx23.jpg', this)" title="Café Clásico"></div>
+              <div class="swatch" style="background-color: #24354A;" onclick="selectColor('azul', 119.99, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZ3Yx3jLs0qVOGT60MMgPFjihXn1N-2MdIqsnE-aWqUQ&s', this)" title="Azul Noche"></div>
+              <div class="swatch" style="background-color: #1A1A1A;" onclick="selectColor('negro', 109.99, 'https://hickok.com.mx/cdn/shop/files/02NEGRO.png?v=1775590983&width=5293', this)" title="Negro Azabache"></div>
+            </div>
+            <p id="color-name-display" style="font-size:0.9rem; margin-top:0.4rem; color:var(--color-primary); font-weight:600;">Café Clásico ($99.99 MXN)</p>
+          </div>
+
+          <!-- Cantidad -->
+          <div class="option-group" style="max-width: 250px;">
+            <label>2. Cantidad (Piezas):</label>
+            <input type="number" id="qty-input" value="1" min="1" onchange="calculateTotal()" onkeyup="calculateTotal()">
+          </div>
+
+          <!-- Personalizado (Grabado de Frase) -->
+          <div class="option-group">
+            <label>3. Personalizado:</label>
+            <div class="custom-text-card">
+              <div class="checkbox-row">
+                <input type="checkbox" id="custom-checkbox" onchange="toggleCustomText()">
+                <div>
+                  <strong>Añadir Grabado Personalizado</strong> (+$35.00 por pza)
+                </div>
+              </div>
+              <div id="custom-input-container" style="display:none; margin-top:0.5rem;">
+                <input type="text" id="custom-text" maxlength="50" placeholder="Escribe tu frase o nombre (máx. 50 caracteres)" onkeyup="updateCharCounter()">
+                <p style="font-size:0.75rem; color:var(--color-soft); text-align:right; margin-top:0.2rem;">
+                  <span id="char-counter">0</span>/50 caracteres
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECCIÓN 2: MAYOREO + MAPA DE ENVÍO -->
+      <section class="secondary-grid">
+        <div class="card-box">
+          <h3>Descuentos por Mayoreo</h3>
+          <p style="font-size:0.85rem; color:var(--color-soft); margin-bottom:0.8rem;">Ahorra automáticamente al comprar por volumen:</p>
+          <table class="wholesale-table">
+            <thead>
+              <tr>
+                <th>Cantidad</th>
+                <th>Descuento</th>
+                <th>Ahorro / pza</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>10 - 19 pzas</td><td>10%</td><td id="save-10">$0.00</td></tr>
+              <tr><td>20 - 29 pzas</td><td>15%</td><td id="save-20">$0.00</td></tr>
+              <tr><td>30+ pzas</td><td>20%</td><td id="save-30">$0.00</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card-box">
+          <h3>Cálculo de Envío ($24/km)</h3>
+          <p style="font-size:0.85rem; color:var(--color-soft);">Haz clic en el mapa para ubicar tu dirección de entrega:</p>
+          <div id="map"></div>
+          <p style="font-size:0.9rem; margin-top:0.6rem;">Distancia: <span id="dist-display">0</span> km | Costo Envío: <strong>$<span id="shipping-display">0.00</span></strong></p>
+        </div>
+      </section>
+
+      <!-- SECCIÓN 3: BARRA DE DESGLOSE Y COMPRA -->
+      <section class="checkout-summary-bar">
+        <div class="summary-details">
+          <div class="summary-item">
+            <span>Subtotal Producto:</span>
+            <strong>$<span id="subtotal-display">0.00</span></strong>
+          </div>
+          <div class="summary-item">
+            <span>IVA (16%):</span>
+            <strong>$<span id="tax-display">0.00</span></strong>
+          </div>
+          <div class="summary-item">
+            <span>Desc. Minijuego:</span>
+            <strong style="color: var(--color-primary);"><span id="game-discount-display">0%</span></strong>
+          </div>
+          <div class="summary-item" style="border-left: 2px solid var(--color-bg); padding-left: 1.5rem;">
+            <span>TOTAL FINAL:</span>
+            <strong style="font-size: 1.6rem; color: var(--color-primary);">$<span id="total-display">0.00</span> MXN</strong>
+          </div>
+        </div>
+
+        <button class="btn-main" onclick="openCheckout()">Comprar Ahora</button>
+      </section>
+
+      <!-- SECCIÓN 4: PRODUCTO RELACIONADO -->
+      <section class="suggested-section">
+        <img src="https://brantano.com.mx/cdn/shop/files/MFFW24PRA_CIN_2.jpg?v=1732574907&width=2000" alt="Tarjetero Brantano">
+        <div>
+          <strong style="font-size: 1rem; color: var(--color-dark);">Sugerencia de Combinación:</strong>
+          <p style="font-size: 0.9rem; color: var(--color-soft);">Tarjetero de Cuero Brantano ($199.99 MXN)</p>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- PESTAÑA ADMIN (PANEL VENTAS) -->
+    <div id="tab-admin" class="tab-content">
+      <div style="background:#fff; padding:2rem; border-radius:16px; box-shadow: 0 4px 20px rgba(0,0,0,0.04);">
+        <h2 style="font-family: var(--font-heading); margin-bottom:1rem; text-transform:uppercase;">Histórico de Ventas</h2>
+        
+        <div id="admin-auth">
+          <p style="margin-bottom:0.5rem;">Sección protegida. Ingresa la clave de acceso:</p>
+          <div style="display:flex; gap:10px; max-width:320px;">
+            <input type="password" id="admin-pass" placeholder="Clave (1234)">
+            <button class="btn-main" style="margin:0; padding:0.6rem 1rem;" onclick="checkAdmin()">Ingresar</button>
+          </div>
+        </div>
+
+        <div id="admin-data" style="display:none;">
+          <table class="sales-table">
+            <thead>
+              <tr>
+                <th>ID Venta</th>
+                <th>Cliente</th>
+                <th>Detalle Producto</th>
+                <th>Envío</th>
+                <th>Total Facturado</th>
+              </tr>
+            </thead>
+            <tbody id="sales-tbody">
+              <!-- Se puebla dinámicamente -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ANUNCIO / POP-UP FLOTANTE DE MINIJUEGO DE DESCUENTO -->
+  <div class="promo-banner-overlay" id="promo-banner">
+    <button class="banner-close" onclick="closeBanner()">&times;</button>
+    <h4 style="font-family: var(--font-heading); text-transform: uppercase; color: var(--color-primary); font-size: 1.1rem;">¡Anuncio Promocional!</h4>
+    <p style="font-size:0.78rem; color:var(--color-dark); margin-top:0.2rem;">Atrapa el botón 3 veces rápido y obtén hasta un <strong>10% OFF EXTRA</strong>.</p>
+    
+    <div class="game-area">
+      <button id="target-btn" onclick="hitTarget()">¡Clic Aquí!</button>
+    </div>
+    <p id="game-status" style="font-weight:bold; font-size:0.8rem; color:var(--color-primary); margin-top:0.4rem; text-align:center;"></p>
+  </div>
+
+  <!-- MODAL FORMULARIO DE PAGO -->
+  <div class="modal" id="modal-checkout">
+    <div class="modal-content">
+      <h3 style="font-family: var(--font-heading); font-size:1.5rem; margin-bottom:1rem; text-transform:uppercase;">Datos de Contacto y Pago</h3>
+      <form id="checkout-form" onsubmit="processPayment(event)">
+        <div class="option-group">
+          <label>Nombre Completo:</label>
+          <input type="text" required placeholder="Juan Pérez">
+        </div>
+        <div class="option-group">
+          <label>Correo Electrónico:</label>
+          <input type="text" required placeholder="juan@example.com">
+        </div>
+        <div class="option-group">
+          <label>Número de Tarjeta (Ficticio):</label>
+          <input type="text" required maxlength="16" placeholder="4532 0000 0000 0000">
+        </div>
+        <div style="display:flex; gap:10px;">
+          <div class="option-group" style="flex:1;">
+            <label>Expiración:</label>
+            <input type="text" required placeholder="MM/AA" maxlength="5">
+          </div>
+          <div class="option-group" style="flex:1;">
+            <label>CVC:</label>
+            <input type="password" required maxlength="3" placeholder="123">
+          </div>
+        </div>
+        <button type="submit" class="btn-main" style="width:100%;">Confirmar y Finalizar Compra</button>
+        <button type="button" class="btn-main" style="background:#888; margin-top:0.5rem; width:100%;" onclick="closeCheckout()">Cancelar</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL TICKET / RECIBO -->
+  <div class="modal" id="modal-ticket">
+    <div class="modal-content">
+      <div class="ticket" id="ticket-body">
+        <!-- Generado dinámicamente -->
+      </div>
+      <button class="btn-main" style="width:100%; margin-top:1rem;" onclick="closeTicket()">Cerrar Recibo</button>
+    </div>
+  </div>
+
+  <!-- Leaflet JS para Mapas -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+    // ESTADO GLOBAL
+    let map, marker;
+    const storeOrigin = { lat: 25.6714, lng: -100.3090 };
+    let shippingCost = 0;
+    let distanceKm = 0;
+    let gameDiscount = 0;
+    let gameClicks = 0;
+    let gameActive = false;
+    let gameTimer;
+    let salesHistory = [];
+
+    // Datos del color seleccionado
+    let selectedColorName = "Café Clásico";
+    let selectedBasePrice = 99.99;
+
+    window.onload = function() {
+      initMap();
+      calculateTotal();
+    };
+
+    // CAMBIO DE PESTAÑAS
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+      
+      if(tab === 'store') {
+        document.getElementById('tab-store').classList.add('active');
+        event.target.classList.add('active');
+      } else {
+        document.getElementById('tab-admin').classList.add('active');
+        event.target.classList.add('active');
+      }
+    }
+
+    // CAMBIAR COLOR E IMAGEN
+    function selectColor(colorKey, price, imgUrl, swatchEl) {
+      document.querySelectorAll('.swatch').forEach(s => s.classList.remove('selected'));
+      swatchEl.classList.add('selected');
+
+      const imgEl = document.getElementById('product-img');
+      imgEl.style.opacity = '0.3';
+      setTimeout(() => {
+        imgEl.src = imgUrl;
+        imgEl.style.opacity = '1';
+      }, 200);
+
+      selectedBasePrice = price;
+      
+      if(colorKey === 'cafe') selectedColorName = "Café Clásico";
+      if(colorKey === 'azul') selectedColorName = "Azul Noche";
+      if(colorKey === 'negro') selectedColorName = "Negro Azabache";
+
+      document.getElementById('color-name-display').innerText = `${selectedColorName} ($${price} MXN)`;
+      calculateTotal();
+    }
+
+    // INTERACCIÓN DE PERSONALIZADO
+    function toggleCustomText() {
+      const isChecked = document.getElementById('custom-checkbox').checked;
+      const container = document.getElementById('custom-input-container');
+      container.style.display = isChecked ? 'block' : 'none';
+      if (!isChecked) {
+        document.getElementById('custom-text').value = '';
+        updateCharCounter();
+      }
+      calculateTotal();
+    }
+
+    function updateCharCounter() {
+      const textLength = document.getElementById('custom-text').value.length;
+      document.getElementById('char-counter').innerText = textLength;
+    }
+
+    // MAPA CON OPENSTREETMAP (Leaflet)
+    function initMap() {
+      map = L.map('map').setView([storeOrigin.lat, storeOrigin.lng], 11);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+      }).addTo(map);
+
+      L.marker([storeOrigin.lat, storeOrigin.lng]).addTo(map).bindPopup('Centro de Distribución').openPopup();
+
+      map.on('click', function(e) {
+        if (marker) map.removeLayer(marker);
+        marker = L.marker(e.latlng).addTo(map);
+        
+        distanceKm = calculateDistance(storeOrigin.lat, storeOrigin.lng, e.latlng.lat, e.latlng.lng);
+        shippingCost = distanceKm * 24; // $24 el km
+        
+        document.getElementById('dist-display').innerText = distanceKm.toFixed(1);
+        document.getElementById('shipping-display').innerText = applyPsychologicalPrice(shippingCost).toFixed(2);
+        
+        calculateTotal();
+      });
+    }
+
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+      const R = 6371;
+      const dLat = (lat2-lat1) * Math.PI / 180;
+      const dLon = (lon2-lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R * c;
+    }
+
+    // PRECIO PSICOLÓGICO (.99)
+    function applyPsychologicalPrice(val) {
+      if (val === 0) return 0;
+      return Math.floor(val) + 0.99;
+    }
+
+    // CÁLCULO DE TOTALES
+    function calculateTotal() {
+      const qty = parseInt(document.getElementById('qty-input').value) || 1;
+      const customActive = document.getElementById('custom-checkbox').checked;
+
+      // Porcentajes de mayoreo
+      let wholesaleDiscountPct = 0;
+      if (qty >= 30) wholesaleDiscountPct = 0.20;
+      else if (qty >= 20) wholesaleDiscountPct = 0.15;
+      else if (qty >= 10) wholesaleDiscountPct = 0.10;
+
+      // Ahorro en tabla
+      document.getElementById('save-10').innerText = '$' + (selectedBasePrice * 0.10).toFixed(2);
+      document.getElementById('save-20').innerText = '$' + (selectedBasePrice * 0.15).toFixed(2);
+      document.getElementById('save-30').innerText = '$' + (selectedBasePrice * 0.20).toFixed(2);
+
+      let unitPrice = selectedBasePrice * (1 - wholesaleDiscountPct);
+      unitPrice = unitPrice * (1 - gameDiscount);
+
+      // Costo adicional por frase personalizada (+$35.00 MXN)
+      if (customActive) {
+        unitPrice += 35.00;
+      }
+
+      const unitPricePsych = applyPsychologicalPrice(unitPrice);
+      const subtotal = unitPricePsych * qty;
+      const tax = subtotal * 0.16;
+      const finalShipping = applyPsychologicalPrice(shippingCost);
+      const grandTotal = subtotal + tax + finalShipping;
+
+      document.getElementById('final-unit-price').innerText = unitPricePsych.toFixed(2);
+      document.getElementById('subtotal-display').innerText = subtotal.toFixed(2);
+      document.getElementById('tax-display').innerText = tax.toFixed(2);
+      document.getElementById('game-discount-display').innerText = (gameDiscount * 100) + '%';
+      document.getElementById('total-display').innerText = grandTotal.toFixed(2);
+    }
+
+    // MINIJUEGO EN EL ANUNCIO POP-UP
+    function closeBanner() {
+      document.getElementById('promo-banner').style.display = 'none';
+    }
+
+    function hitTarget() {
+      if (!gameActive) {
+        gameActive = true;
+        gameClicks = 0;
+        gameTimer = setTimeout(() => {
+          gameActive = false;
+          if(gameClicks < 3) {
+            document.getElementById('game-status').innerText = '¡Tiempo agotado!';
+            gameClicks = 0;
+          }
+        }, 4000);
+      }
+
+      gameClicks++;
+      const btn = document.getElementById('target-btn');
+      
+      const x = Math.random() * 180;
+      const y = Math.random() * 50;
+      btn.style.left = x + 'px';
+      btn.style.top = y + 'px';
+
+      if (gameClicks >= 3 && gameActive) {
+        clearTimeout(gameTimer);
+        gameActive = false;
+        gameDiscount = 0.10;
+        document.getElementById('game-status').innerText = '¡Felicidades! 10% extra aplicado.';
+        btn.style.display = 'none';
+        calculateTotal();
+      } else if (gameActive) {
+        document.getElementById('game-status').innerText = `¡Clicks: ${gameClicks}/3!`;
+      }
+    }
+
+    // CHECKOUT Y TICKET
+    function openCheckout() {
+      document.getElementById('modal-checkout').style.display = 'flex';
+    }
+
+    function closeCheckout() {
+      document.getElementById('modal-checkout').style.display = 'none';
+    }
+
+    function processPayment(e) {
+      e.preventDefault();
+      closeCheckout();
+
+      const qty = document.getElementById('qty-input').value;
+      const unitPrice = parseFloat(document.getElementById('final-unit-price').innerText);
+      const subtotal = parseFloat(document.getElementById('subtotal-display').innerText);
+      const tax = parseFloat(document.getElementById('tax-display').innerText);
+      const shipping = applyPsychologicalPrice(shippingCost);
+      const total = parseFloat(document.getElementById('total-display').innerText);
+      const saleId = 'TKT-' + Math.floor(100000 + Math.random() * 900000);
+
+      const customActive = document.getElementById('custom-checkbox').checked;
+      const customPhrase = document.getElementById('custom-text').value;
+
+      salesHistory.push({
+        id: saleId,
+        client: 'Cliente Ficticio',
+        details: `${qty}x Llavero (${selectedColorName})${customActive && customPhrase ? ' [Grabado: "' + customPhrase + '"]' : ''}`,
+        shipping: '$' + shipping.toFixed(2),
+        total: '$' + total.toFixed(2)
+      });
+
+      const ticketHTML = `
+        <h3>RECIBO DE COMPRA</h3>
+        <p style="text-align:center; font-size:0.75rem;">Folio: ${saleId}</p>
+        <p style="text-align:center; font-size:0.75rem;">--------------------------------</p>
+        <div class="ticket-line"><span>Producto: Llavero (${selectedColorName})</span></div>
+        ${customActive && customPhrase ? `<div class="ticket-line"><span>Grabado: "${customPhrase}"</span></div>` : ''}
+        <div class="ticket-line"><span>Cantidad x P.U.:</span> <span>${qty} x $${unitPrice}</span></div>
+        <div class="ticket-line"><span>Subtotal:</span> <span>$${subtotal.toFixed(2)}</span></div>
+        <div class="ticket-line"><span>Desc. Juego:</span> <span>${gameDiscount * 100}%</span></div>
+        <div class="ticket-line"><span>IVA (16%):</span> <span>$${tax.toFixed(2)}</span></div>
+        <div class="ticket-line"><span>Envío ($24/km):</span> <span>$${shipping.toFixed(2)}</span></div>
+        <div class="ticket-line ticket-total"><span>TOTAL:</span> <span>$${total.toFixed(2)} MXN</span></div>
+        <p style="text-align:center; margin-top:1rem; font-size:0.75rem;">¡Gracias por tu compra!</p>
+      `;
+
+      document.getElementById('ticket-body').innerHTML = ticketHTML;
+      document.getElementById('modal-ticket').style.display = 'flex';
+      renderSalesTable();
+    }
+
+    function closeTicket() {
+      document.getElementById('modal-ticket').style.display = 'none';
+    }
+
+    // ADMIN
+    function checkAdmin() {
+      const pass = document.getElementById('admin-pass').value;
+      if (pass === '1234') {
+        document.getElementById('admin-auth').style.display = 'none';
+        document.getElementById('admin-data').style.display = 'block';
+        renderSalesTable();
+      } else {
+        alert('Clave incorrecta. Usa "1234".');
+      }
+    }
+
+    function renderSalesTable() {
+      const tbody = document.getElementById('sales-tbody');
+      tbody.innerHTML = '';
+      salesHistory.forEach(sale => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${sale.id}</td>
+          <td>${sale.client}</td>
+          <td>${sale.details}</td>
+          <td>${sale.shipping}</td>
+          <td><strong>${sale.total}</strong></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+  </script>
+</body>
+</html>
